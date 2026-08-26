@@ -1,0 +1,25 @@
+---
+title: "Sofia Han"
+image: "photo.jpg"
+links:
+  - label: GitHub
+    url: "https://github.com/sofiahan/SDS-365"
+output:
+  postcards::trestles
+---
+
+## About Me
+
+I'm a senior at the University of Texas at Austin majoring in Finance and Statistics & Data Science. My hobbies include playing pickleball, doing yoga, and watching anime. A fun fact about me is that my three best friends and I have gone to the same schools since elementary.
+
+## Favorite Anime
+
+- One Piece
+- Jujutsu Kaisen
+- Bungo Stray Dogs
+
+Website built at:
+
+```{r, echo = FALSE}
+Sys.time()
+```
