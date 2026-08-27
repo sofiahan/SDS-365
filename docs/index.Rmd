@@ -3,7 +3,7 @@ title: "Sofia Han"
 image: "photo.jpg"
 links:
   - label: GitHub
-    url: "https://github.com/sofiahan/SDS-365"
+    url: "https://github.com/sofiahan"
 output:
   postcards::trestles
 ---
