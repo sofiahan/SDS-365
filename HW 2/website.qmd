@@ -1,0 +1,348 @@
+---
+title: "PCA for Image Compression"
+format: html
+---
+
+```{r}
+#| echo: false
+#| message: false
+
+library(readr)
+
+# read the csv files into data frames
+image1 <- read_csv("images/image1.csv")
+image2 <- read_csv("images/image2.csv")
+image3 <- read_csv("images/image3.csv")
+image4 <- read_csv("images/image4.csv")
+
+# convert data frames into matrices
+image1 <- data.matrix(image1)
+image2 <- data.matrix(image2)
+image3 <- data.matrix(image3)
+image4 <- data.matrix(image4)
+```
+
+## Image Compression Function
+
+```{r}
+# image compression function
+compress_image <- function(X, k) {
+  pca <- prcomp(X, center = FALSE, scale. = FALSE) # perform PCA without centering or scaling
+  
+  Z <- pca$x # principal component scores
+  U <- pca$rotation # principal component directions
+  
+  Zk <- Z[, 1:k, drop = FALSE] # keep only the first k principal components
+  Uk <- U[, 1:k, drop = FALSE]
+  
+  Xk <- Zk %*% t(Uk) # construct the rank k approximation: X^(k) = z1u'1 + z2u'2 + ... + zku'k
+  
+  error <- norm(X - Xk, type = "F") # calculate the Frobenius norm error
+  
+  return(list(approximation = Xk, error = error)) # return the rank k approximation and the error
+}
+```
+
+## Image 1
+
+```{r}
+#| echo: false
+
+# requirement 1
+
+# create empty list to store first 10 PCA approximations of image 1
+image1approx <- list()
+
+# compute and store the rank k approximations
+for (k in 1:10) {
+  image1approx[[k]] <- compress_image(image1, k)$approximation
+}
+
+# function for plotting the image matrices
+plot_image <- function(X, title = "") {
+  image(t(X[nrow(X):1,]), axes = FALSE, main = title)
+}
+
+# plot original image and the first 10 PCA approximations
+par(mfrow = c(4,3), 
+    mar = c(1,1,2,1))
+plot_image(image1, "Original")
+
+for(k in 1:10) {
+  plot_image(image1approx[[k]], paste("k =", k))
+}
+
+# plot_image(image1approx[[1]])
+```
+
+
+
+
+
+```{r}
+#| echo: false
+
+# requirement 2
+
+# define all possible values of k
+kvalues1 <- 1:ncol(image1)
+
+# create empty vector to store the approximation errors
+errors1 <- numeric(length(kvalues1))
+
+# compute the Frobenius norm error for all possible values of k
+for(k in kvalues1) {
+  errors1[k] <- compress_image(image1, k)$error
+}
+
+# plot the approximation error against k
+par(mfrow = c(1, 1))
+plot(kvalues1, errors1, type = "l", xlab = "k", ylab = "Frobenius Norm Error", main = "Approximation Error vs k")
+```
+
+```{r}
+#| echo: false
+
+# requirement 3
+
+# perform PCA on image 1 without centering or scaling
+pca1 <- prcomp(image1, center = FALSE, scale. = FALSE)
+
+# extract first eigenvector and first principal component score
+firstvector1 <- pca1$rotation[, 1]
+firstpcscore1 <- pca1$x[, 1]
+
+# plot first eigenvector and first PC score
+par(mfrow = c(1,2))
+plot(firstvector1, type = "l", xlab = "Column", ylab = "Value", main = "First Eigenvector")
+plot(firstpcscore1, type = "l", xlab = "Row", ylab = "PC Score", main = "First PC Score")
+```
+
+### Interpretation
+
+The first eigenvector captures the most dominant feature across the columns of the image matrix. Most of its values are close to zero except for a large negative spike near column 80. This indicates that that column contributes most strongly to the first principal component, which corresponds to the prominent vertical red line in the image. The first PC score shows how strongly each row expresses this feature. Its values stay at a fairly consistent baseline around -20, which is consistent with the red line extending continuously down the image. The fluctuations in the scores reflect row to row variation in the repeating grain/texture visible in the background.
+
+### Opinion
+
+I think k = 1 provides a sufficiently good approximation for Image 1 because it captures the dominant feature of the image (the red line) and the general background color. Increasing k adds more of the fine-grained background texture, but doesn't substantially change the main visual structure of the image.Thus, k = 1 provides a good balance between compression and preserving the most important features.
+
+## Image 2
+
+```{r}
+#| echo: false
+
+# requirement 1
+
+# create empty list to store first 10 PCA approximations of image 2
+image2approx <- list()
+
+# compute and store the rank k approximations
+for (k in 1:10) {
+  image2approx[[k]] <- compress_image(image2, k)$approximation
+}
+
+# plot original image and the first 10 PCA approximations
+par(mfrow = c(4,3), 
+    mar = c(1,1,2,1))
+plot_image(image2, "Original")
+
+for(k in 1:10) {
+  plot_image(image2approx[[k]], paste("k =", k))
+}
+
+# plot_image(image2approx[[2]])
+```
+
+```{r}
+#| echo: false
+
+# requirement 2
+
+# define all possible values of k
+kvalues2 <- 1:ncol(image2)
+
+# create empty vector to store the approximation errors
+errors2 <- numeric(length(kvalues2))
+
+# compute the Frobenius norm error for all possible values of k
+for(k in kvalues2) {
+  errors2[k] <- compress_image(image2, k)$error
+}
+
+# plot the approximation error against k
+par(mfrow = c(1, 1))
+plot(kvalues2, errors2, type = "l", xlab = "k", ylab = "Frobenius Norm Error", main = "Approximation Error vs k")
+```
+
+```{r}
+#| echo: false
+
+# requirement 3
+
+# perform PCA on image 2 without centering or scaling
+pca2 <- prcomp(image2, center = FALSE, scale. = FALSE)
+
+# extract first eigenvector and first principal component score
+firstvector2 <- pca2$rotation[, 1]
+firstpcscore2 <- pca2$x[, 1]
+
+# plot first eigenvector and first PC score
+par(mfrow = c(1,2))
+plot(firstvector2, type = "l", xlab = "Column", ylab = "Value", main = "First Eigenvector")
+plot(firstpcscore2, type = "l", xlab = "Row", ylab = "PC Score", main = "First PC Score")
+```
+
+### Interpretation
+
+The first eigenvector changes gradually across the columns of Image 2, indicating that the dominant pattern is a smooth left-to-right change in intensity rather than a feature concentrated at one specific location. This matches the original image, where the horizontal streaks generally become more pronounced toward the right side. The first PC score shows how strongly each row expresses this left-to-right pattern. The variation in the scores indicates that different rows express this pattern to different degrees, reflecting differences in intensity and contrast across the horizontal streaks.
+
+### Opinion
+
+I think k = 2 provides a sufficiently good approximation for Image 2. The approximation error decreases sharply by k = 2 and is nearly zero for larger values of k, indicating that the first two principal components capture almost all of the important structure in the image. The rank 2 approximation also closely resembles the original image, preserving the dominant horizontal streak pattern.
+
+## Image 3
+
+```{r}
+#| echo: false
+
+# requirement 1
+
+# create empty list to store first 10 PCA approximations of image 3
+image3approx <- list()
+
+# compute and store the rank k approximations
+for (k in 1:26) {
+  image3approx[[k]] <- compress_image(image3, k)$approximation
+}
+
+# plot original image and the first 10 PCA approximations
+par(mfrow = c(4,3), 
+    mar = c(1,1,2,1))
+plot_image(image3, "Original")
+
+for(k in 1:10) {
+  plot_image(image3approx[[k]], paste("k =", k))
+}
+#plot_image(image3approx[[25]])
+```
+
+```{r}
+#| echo: false
+
+# requirement 2
+
+# define all possible values of k
+kvalues3 <- 1:ncol(image3)
+
+# create empty vector to store the approximation errors
+errors3 <- numeric(length(kvalues3))
+
+# compute the Frobenius norm error for all possible values of k
+for(k in kvalues3) {
+  errors3[k] <- compress_image(image3, k)$error
+}
+
+# plot the approximation error against k
+par(mfrow = c(1, 1))
+plot(kvalues3, errors3, type = "l", xlab = "k", ylab = "Frobenius Norm Error", main = "Approximation Error vs k")
+```
+
+```{r}
+#| echo: false
+
+# requirement 3
+
+# perform PCA on image 3 without centering or scaling
+pca3 <- prcomp(image3, center = FALSE, scale. = FALSE)
+
+# extract first eigenvector and first principal component score
+firstvector3 <- pca3$rotation[, 1]
+firstpcscore3 <- pca3$x[, 1]
+
+# plot first eigenvector and first PC score
+par(mfrow = c(1,2))
+plot(firstvector3, type = "l", xlab = "Column", ylab = "Value", main = "First Eigenvector")
+plot(firstpcscore3, type = "l", xlab = "Row", ylab = "PC Score", main = "First PC Score")
+```
+
+### Interpretation
+
+The first eigenvector captures the dominant horizontal pattern across the columns of the image. The larger magnitude troughs around columns 150 and 250 indicate regions that contribute strongly to the first principal component, corresponding to areas of strong intensity variation in the image. The first PC score shows how strongly the dominant pattern is expressed across the rows. The large positive scores around rows 80-160 indicate that this pattern is especially present in the upper portion of the image, where much of the bright dog body is located. The more negative scores in the lower rows (around 50) as well as the highest rows (300+) reflect regions with different intensity patterns, such as the darker floor and background.
+
+### Opinion
+
+I think k = 25 provides a sufficiently good approximation for Image 3. The approximation error decreases rapidly for the first several principal components, then starts to flatten around k = 25 (the elbow). Additional components beyond this point produce smaller improvements in the error. The rank 25 approximation also closely resembles the original image, even though it appears slightly blurrier.
+
+## Image 4
+
+```{r}
+#| echo: false
+
+# requirement 1
+
+# create empty list to store first 10 PCA approximations of image 4
+image4approx <- list()
+
+# compute and store the rank k approximations
+for (k in 1:10) {
+  image4approx[[k]] <- compress_image(image4, k)$approximation
+}
+
+# plot original image and the first 10 PCA approximations
+par(mfrow = c(4,3), 
+    mar = c(1,1,2,1))
+plot_image(image4, "Original")
+
+for(k in 1:10) {
+  plot_image(image4approx[[k]], paste("k =", k))
+}
+
+# plot_image(image4approx[[10]])
+```
+
+```{r}
+#| echo: false
+
+# requirement 2
+
+# define all possible values of k
+kvalues4 <- 1:ncol(image4)
+
+# create empty vector to store the approximation errors
+errors4 <- numeric(length(kvalues4))
+
+# compute the Frobenius norm error for all possible values of k
+for(k in kvalues4) {
+  errors4[k] <- compress_image(image4, k)$error
+}
+
+# plot the approximation error against k
+par(mfrow = c(1, 1))
+plot(kvalues4, errors4, type = "l", xlab = "k", ylab = "Frobenius Norm Error", main = "Approximation Error vs k")
+```
+
+```{r}
+#| echo: false
+
+# requirement 3
+
+# perform PCA on image 4 without centering or scaling
+pca4 <- prcomp(image4, center = FALSE, scale. = FALSE)
+
+# extract first eigenvector and first principal component score
+firstvector4 <- pca4$rotation[, 1]
+firstpcscore4 <- pca4$x[, 1]
+
+# plot first eigenvector and first PC score
+par(mfrow = c(1,2))
+plot(firstvector4, type = "l", xlab = "Column", ylab = "Value", main = "First Eigenvector")
+plot(firstpcscore4, type = "l", xlab = "Row", ylab = "PC Score", main = "First PC Score")
+```
+
+### Interpretation
+
+The first eigenvector shows that the dominant feature in Image 4 is concentrated mostly around columns 60-90, where the eigenvector has the largest magnitude. This corresponds to a central region of the image containing strong intensity contrasts. The first PC score shows how strongly this column pattern is expressed across the rows. The scores vary a lot, with notable negative dips around row 60 and especially around rows 140-155. These rows contain strong high-contrast features, indicating that the dominant pattern captured by the first eigenvector is expressed particularly strongly in those horizontal regions of the image.
+
+### Opinion
+
+I think k = 10 provides a sufficiently good approximation for Image 4. The approximation error decreases rapidly for the first several principal components and begins to level off around k = 10 (the elbow), so additional components provide progressively smaller reductions in the error. The rank 10 approximation also preserves the major visual features of the original image.

@@ -1,1 +1,7 @@
 .Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+__MACOSX/
+.DS_Store
+rsconnect/
